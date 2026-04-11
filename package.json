@@ -1,0 +1,15 @@
+{
+  "name": "stitch-compact-pomodoro",
+  "version": "1.0.0",
+  "description": "Compact Pomodoro Timer Widget",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^34.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron"]
+  }
+}
