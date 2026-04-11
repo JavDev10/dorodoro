@@ -10,6 +10,7 @@ function createWindow() {
     resizable: false,
     frame: false,
     transparent: true,
+    icon: path.join(__dirname, 'img', 'icon_app2.png'),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: false

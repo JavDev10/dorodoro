@@ -204,6 +204,7 @@ document.querySelectorAll('.btn-up, .btn-down').forEach(btn => {
     if (targetId === 'input-focus') state.focusMin = val;
     else if (targetId === 'input-break') state.breakMin = val;
     else if (targetId === 'input-cycles') state.cycles = val;
+    saveSettings();
   });
 });
 
@@ -272,8 +273,8 @@ function applyLang(lang) {
   }
 }
 
-document.getElementById('lang-es').addEventListener('click', () => { playSound('button'); applyLang('es'); });
-document.getElementById('lang-en').addEventListener('click', () => { playSound('button'); applyLang('en'); });
+document.getElementById('lang-es').addEventListener('click', () => { playSound('button'); applyLang('es'); saveSettings(); });
+document.getElementById('lang-en').addEventListener('click', () => { playSound('button'); applyLang('en'); saveSettings(); });
 
 // Init: Spanish by default
 applyLang('es');
@@ -281,6 +282,7 @@ applyLang('es');
 // ── Theme system ────────────────────────────
 const THEMES = {
   noqui: {
+    pet:                      '../img/ñoqui.gif',
     primary:                  '#805449',
     primaryContainer:         '#fec4b5',
     onPrimary:                '#fff7f6',
@@ -298,6 +300,7 @@ const THEMES = {
     ringTrack:                '#ebe3c2',
   },
   chloe: {
+    pet:                      null, // TODO: add chloe pet
     primary:                  '#031926',
     primaryContainer:         '#7871A4',
     onPrimary:                '#F2EEF7',
@@ -315,6 +318,7 @@ const THEMES = {
     ringTrack:                '#A799B7',
   },
   max: {
+    pet:                      null, // TODO: add max pet
     primary:                  '#0094c6',
     primaryContainer:         '#005e7c',
     onPrimary:                '#e0f4ff',
@@ -332,6 +336,7 @@ const THEMES = {
     ringTrack:                '#005e7c',
   },
   black: {
+    pet:                      null, // TODO: add black pet
     primary:                  '#725ac1',
     primaryContainer:         '#8d86c9',
     onPrimary:                '#f7ece1',
@@ -387,6 +392,15 @@ function applyTheme(name) {
   const stops = document.querySelectorAll('#timerGradient stop');
   if (stops[0]) stops[0].setAttribute('stop-color', t.primary);
   if (stops[1]) stops[1].setAttribute('stop-color', t.primaryContainer);
+
+  // Pet mascot
+  const petImg = document.getElementById('pet-image');
+  if (t.pet) {
+    petImg.src = t.pet;
+    petImg.style.display = '';
+  } else {
+    petImg.style.display = 'none';
+  }
 }
 
 // Theme button click handler
@@ -402,10 +416,68 @@ document.querySelectorAll('.theme-btn').forEach(btn => {
     });
     btn.classList.remove('bg-surface-container-high', 'text-on-surface', 'font-medium');
     btn.classList.add('bg-gradient-to-br', 'from-primary', 'to-primary-container', 'text-white', 'font-bold', 'active-theme');
+    saveSettings();
   });
 });
 
 // Volume slider
 document.getElementById('volume-slider').addEventListener('input', e => {
   volume = e.target.value / 100;
+  saveSettings();
 });
+
+// ── Persistence ─────────────────────────────
+function saveSettings() {
+  localStorage.setItem('dorodoro', JSON.stringify({
+    theme:     document.querySelector('.theme-btn.active-theme')?.dataset.theme ?? 'noqui',
+    lang:      state.lang,
+    volume:    Math.round(volume * 100),
+    focusMin:  state.focusMin,
+    breakMin:  state.breakMin,
+    cycles:    state.cycles,
+  }));
+}
+
+function loadSettings() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem('dorodoro')); } catch (_) {}
+  if (!saved) return;
+
+  // Theme
+  if (saved.theme) {
+    applyTheme(saved.theme);
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      const active = b.dataset.theme === saved.theme;
+      b.classList.toggle('bg-gradient-to-br',        active);
+      b.classList.toggle('from-primary',             active);
+      b.classList.toggle('to-primary-container',     active);
+      b.classList.toggle('text-white',               active);
+      b.classList.toggle('font-bold',                active);
+      b.classList.toggle('active-theme',             active);
+      b.classList.toggle('bg-surface-container-high',!active);
+      b.classList.toggle('text-on-surface',          !active);
+      b.classList.toggle('font-medium',              !active);
+    });
+  }
+
+  // Language
+  if (saved.lang) applyLang(saved.lang);
+
+  // Volume
+  if (saved.volume != null) {
+    volume = saved.volume / 100;
+    document.getElementById('volume-slider').value = saved.volume;
+  }
+
+  // Timer inputs
+  function setInput(id, val, suffix) {
+    const input = document.getElementById(id);
+    input.dataset.value = val;
+    input.value = val + suffix;
+  }
+  if (saved.focusMin) { state.focusMin = saved.focusMin; setInput('input-focus',  saved.focusMin, ' min'); }
+  if (saved.breakMin) { state.breakMin = saved.breakMin; setInput('input-break',  saved.breakMin, ' min'); }
+  if (saved.cycles)   { state.cycles   = saved.cycles;   setInput('input-cycles', saved.cycles,   '');     }
+}
+
+loadSettings();
