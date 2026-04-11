@@ -4,12 +4,33 @@
   "description": "Compact Pomodoro Timer Widget",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^34.0.0"
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.dorodoro.app",
+    "productName": "DoroDoro",
+    "win": {
+      "target": "nsis",
+      "icon": "img/icon_app.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "installerIcon": "img/icon_app.ico",
+      "uninstallerIcon": "img/icon_app.ico"
+    },
+    "files": [
+      "main.js",
+      "renderer/**/*",
+      "img/**/*",
+      "sounds/**/*"
+    ]
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["electron"]
+    "onlyBuiltDependencies": ["electron", "electron-builder"]
   }
 }
