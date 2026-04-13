@@ -67,7 +67,8 @@ const state = {
   totalTime: 0,
   isPaused: false,
   wasRunningBeforeSettings: false,
-  timer: null
+  timer: null,
+  endTime: 0
 };
 
 // ── View switching ──────────────────────────
@@ -110,15 +111,16 @@ function startTimer() {
   clearInterval(state.timer);
   state.isPaused = false;
   resetPauseButton();
+  state.endTime = Date.now() + state.timeLeft * 1000;
   state.timer = setInterval(() => {
     if (state.isPaused) return;
-    state.timeLeft--;
+    state.timeLeft = Math.max(0, Math.round((state.endTime - Date.now()) / 1000));
     updateDisplay();
     if (state.timeLeft <= 0) {
       clearInterval(state.timer);
       onTimerEnd();
     }
-  }, 1000);
+  }, 500);
 }
 
 function onTimerEnd() {
@@ -160,6 +162,10 @@ function beginBreak() {
 
 function pauseTimer(view) {
   state.isPaused = !state.isPaused;
+  if (!state.isPaused) {
+    // Resuming: recalculate endTime so elapsed pause time isn't counted
+    state.endTime = Date.now() + state.timeLeft * 1000;
+  }
   const S = STRINGS[state.lang];
   const icon = document.getElementById(view + '-pause-icon');
   const text = document.getElementById(view + '-pause-text');
